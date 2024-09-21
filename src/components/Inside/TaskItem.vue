@@ -30,10 +30,10 @@ export default {
           return 'text-yellow-500';
         case '进行中':
           return 'text-green-500';
-        case '已完成':
+        case '整改中':
           return 'text-red-500';
-        case '已到期':
-          return 'text-red-600';
+        case '已完成':
+          return 'text-blue-600';
         default:
           return '';
       }

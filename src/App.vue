@@ -1,15 +1,10 @@
 <template>
-  <TaskPage />
+  <router-view></router-view>
 </template>
 
 <script>
-import TaskPage from './components/TaskPage.vue'
-
 export default {
   name: 'App',
-  components: {
-    TaskPage
-  }
 }
 </script>
 
