@@ -13,7 +13,7 @@
         <label class="block mb-2">任务类型：</label>
         <input
           type="text"
-          v-model="editedTask.type"
+          v-model="editedTask.taskCategory	"
           class="w-full border p-2 mb-4"
         />
 

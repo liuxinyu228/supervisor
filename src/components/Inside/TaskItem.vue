@@ -5,7 +5,7 @@
         <span :class="statusClass">{{ task.status }}</span>
         <h3 class="text-lg font-bold">{{ task.title }}</h3>
         <p class="text-gray-500">
-          任务类型: {{ task.type }} <br />
+          任务类型: {{ task.taskCategory	 }} <br />
           任务描述: {{ task.description }} <br />
           开始时间: {{ task.startAt }} <br />
           结束时间: {{ task.endAt }}

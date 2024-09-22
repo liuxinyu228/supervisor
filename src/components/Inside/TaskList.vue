@@ -85,7 +85,7 @@ export default {
   methods: {
     async loadTasks() {
       try {
-        const response = await fetch('/taskTemplate/tasks.json'); // 从本地加载任务数据
+        const response = await fetch('http://127.0.0.1:3000/api/taskTemplate/101'); // 从新接口加载任务数据
         const data = await response.json();
         this.tasks = data;
       } catch (error) {
