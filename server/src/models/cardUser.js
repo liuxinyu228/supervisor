@@ -13,6 +13,7 @@ class cardUser {
     connection.query(sql, [id], callback);
   }
 
+
   // 新增用户
   static addUser(user, callback) {
     // 定义user对象的结构

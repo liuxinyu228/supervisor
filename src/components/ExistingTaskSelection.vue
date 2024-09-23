@@ -51,16 +51,16 @@
             <tbody class="bg-white divide-y divide-gray-200">
               <tr v-for="task in displayedTasks" :key="task.id">
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  {{ task.businessName }}
+                  {{ task.system_name }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {{ task.managerName }}
+                  {{ task.superintendent_name }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {{ task.evaluationType }}
+                  {{ task.workclassification }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {{ task.creatDate }}
+                  {{ task.created_at }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <button
@@ -154,35 +154,48 @@
   </template>
   
   <script>
-  import { ref, computed } from 'vue'
+  import { ref, computed, onMounted } from 'vue'
 
   export default {
     setup() {
-      const tasks = ref([
-        { id: 1, businessName: '系统A', managerName: '张三', evaluationType: '新技术新业务评估', creationDate: '2023-05-01' },
-        { id: 2, businessName: '系统B', managerName: '李四', evaluationType: '涉诈风险安全评估', creationDate: '2023-05-02' },
-        { id: 3, businessName: '系统C', managerName: '王五', evaluationType: '新技术新业务评估', creationDate: '2023-05-03' },
-        { id: 4, businessName: '系统D', managerName: '赵六', evaluationType: '涉诈风险安全评估', creationDate: '2023-05-04' },
-        { id: 5, businessName: '系统E', managerName: '钱七', evaluationType: '新技术新业务评估', creationDate: '2023-05-05' },
-        { id: 6, businessName: '系统F', managerName: '孙八', evaluationType: '涉诈风险安全评估', creationDate: '2023-05-06' },
-        { id: 7, businessName: '系统G', managerName: '周九', evaluationType: '新技术新业务评估', creationDate: '2023-05-07' },
-        { id: 8, businessName: '系统H', managerName: '吴十', evaluationType: '涉诈风险安全评估', creationDate: '2023-05-08' },
-        // 可以继续添加更多模拟数据...
-      ])
-
+      const tasks = ref([])
       const searchQuery = ref('')
       const currentPage = ref(1)
       const itemsPerPage = 5
+      const totalPages = ref(1)
+      const API_BASE_URL = 'http://127.0.0.1:3000'
+
+      const fetchTasks = async () => {
+        try {
+          const response = await fetch(`${API_BASE_URL}/api/userSystems?limit=${itemsPerPage}&page=${currentPage.value}`, {
+            credentials: 'include' // 携带凭证
+          });
+          const data = await response.json();
+          data.total = data.data.length
+
+          // 确保 data.data 和 data.total 存在
+          if (data.data && data.total !== undefined) {
+            tasks.value = data.data
+            totalPages.value = Math.ceil(data.total / itemsPerPage)
+          } else {
+            console.error('Unexpected response format:', data)
+          }
+        } catch (error) {
+          console.error('Error fetching tasks:', error)
+        }
+      }
+
+      onMounted(() => {
+        fetchTasks()
+      })
 
       const filteredTasks = computed(() => {
         return tasks.value.filter(task =>
-          task.businessName.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-          task.managerName.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-          task.evaluationType.toLowerCase().includes(searchQuery.value.toLowerCase())
+          task.system_name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+          task.superintendent_name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+          task.workclassification.toLowerCase().includes(searchQuery.value.toLowerCase())
         )
       })
-
-      const totalPages = computed(() => Math.ceil(filteredTasks.value.length / itemsPerPage))
 
       const displayedTasks = computed(() => {
         const start = (currentPage.value - 1) * itemsPerPage
@@ -204,23 +217,27 @@
 
       const handleSearch = () => {
         currentPage.value = 1
+        fetchTasks()
       }
 
       const prevPage = () => {
         if (currentPage.value > 1) {
           currentPage.value--
+          fetchTasks()
         }
       }
 
       const nextPage = () => {
         if (currentPage.value < totalPages.value) {
           currentPage.value++
+          fetchTasks()
         }
       }
 
       const goToPage = (page) => {
         if (page !== '...') {
           currentPage.value = page
+          fetchTasks()
         }
       }
 
@@ -239,17 +256,17 @@
         goToPage
       }
     },
-    methods:{
+    methods: {
       selectTask(task) {
-        console.log('选择的任务:', task);
+        console.log('选择的任务:', task)
         this.$router.push({
           path: '/compile',
           query: {
-            businessName: task.businessName,
-            evaluationType: task.evaluationType
+            businessName: task.system_name,
+            evaluationType: task.workclassification
           }
-        });
+        })
       }
-    },
+    }
   }
   </script>
