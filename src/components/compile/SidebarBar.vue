@@ -15,7 +15,7 @@
           </li>
           <li class="mb-2">
             <router-link to="/compile/filemanager" class="text-gray-500" active-class="text-blue-600" exact-active-class="text-blue-600">
-              文件管理
+              参考文件管理
             </router-link>
           </li>
         </ul>

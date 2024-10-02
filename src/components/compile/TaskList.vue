@@ -6,6 +6,7 @@
       :key="task.id"
       :task="task"
       @edit-task="openEditModal"
+      @view-task="openViewModal" 
     />
 
     <!-- 只引入一次分页组件 -->
@@ -23,6 +24,14 @@
       :task="selectedTask"
       @close="closeEditModal"
       @save="saveTask"
+    />
+
+    <!-- 查看任务弹窗 -->
+    <TaskEditModal
+      v-if="isViewModalOpen"
+      :task="selectedTask"
+      @close="closeViewModal"
+      :isViewOnly=true
     />
   </div>
 </template>
@@ -44,6 +53,7 @@ export default {
       currentPage: 1, // 当前页码
       tasksPerPage: 5, // 每页显示的任务数
       isEditModalOpen: false, // 控制编辑弹窗是否显示
+      isViewModalOpen: false, // 控制查看弹窗是否显示
       selectedTask: null, // 当前选中的任务
       filters: {
         type: '',
@@ -85,7 +95,10 @@ export default {
   methods: {
     async loadTasks() {
       try {
-        const response = await fetch('http://127.0.0.1:3000/api/taskTemplate/101'); // 从新接口加载任务数据
+        const API_BASE_URL = "http://127.0.0.1:3000"
+        const response = await fetch(`${API_BASE_URL}/api/userWorkTasks`, {
+          credentials: 'include' // 确保请求时携带 Cookie
+        });
         const data = await response.json();
         this.tasks = data;
       } catch (error) {
@@ -109,6 +122,16 @@ export default {
     // 关闭编辑弹窗
     closeEditModal() {
       this.isEditModalOpen = false;
+      this.selectedTask = null;
+    },
+    // 打开查看任务的弹窗
+    openViewModal(task) {
+      this.selectedTask = task;
+      this.isViewModalOpen = true;
+    },
+    // 关闭查看弹窗
+    closeViewModal() {
+      this.isViewModalOpen = false;
       this.selectedTask = null;
     },
     // 保存编辑的任务

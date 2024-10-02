@@ -19,10 +19,6 @@ export default {
   },
   data() {
     return {
-      taskData: {
-        businessName: this.$route.query.businessName,
-        evaluationType: this.$route.query.evaluationType
-      }
     };
   },
   mounted() {
@@ -31,7 +27,6 @@ export default {
   },
   methods: {
     debug() {
-      console.log('接收到的任务数据:', this.taskData);
     }
   }
 

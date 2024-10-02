@@ -2,11 +2,11 @@
     <div class="min-h-screen bg-gray-100 p-8">
       <div class="max-w-4xl mx-auto bg-white rounded-lg shadow-md overflow-hidden">
         <div class="p-6">
-          <h1 class="text-3xl font-bold text-gray-800 mb-6">File Manager</h1>
+          <h1 class="text-3xl font-bold text-gray-800 mb-6">参考文件管理</h1>
   
           <!-- Create Directory Form -->
           <div class="mb-6">
-            <h2 class="text-xl font-semibold text-gray-700 mb-2">Create New Directory</h2>
+            <h2 class="text-xl font-semibold text-gray-700 mb-2">创建新目录</h2>
             <div class="flex">
               <input
                 v-model="newDirectoryName"

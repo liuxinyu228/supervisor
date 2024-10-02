@@ -45,19 +45,18 @@
                  class="relative flex items-center justify-between"
                  :class="{ 'flex-row-reverse': index % 2 !== 0 }">
               <div class="flex items-center w-5/12" :class="{ 'justify-end': index % 2 !== 0 }">
-                <div class="bg-white p-4 rounded-lg shadow-md transition-all duration-300 ease-in-out hover:shadow-lg"
+                <div class="bg-white p-4 rounded-lg shadow-md transition-all duration-300 ease-in-out hover:shadow-lg w-7/12"
                      :class="{ 'mr-8': index % 2 === 0, 'ml-8': index % 2 !== 0 }">
                   <h3 class="text-lg font-semibold text-gray-900">{{ event.title }}</h3>
                   <p class="text-sm text-gray-500">{{ formatDate(event.date) }}</p>
                   <p class="mt-2 text-gray-700">{{ event.description }}</p>
-                  <div v-if="event.attachment" class="mt-2">
-                    <a :href="event.attachment.url" 
-                       download 
+                  <div v-if="event.attachment_path" class="mt-2">
+                    <a :href="`${API_BASE_URL}/api/timeline/${event.id}/download`" 
                        class="text-sm text-indigo-600 hover:text-indigo-800 flex items-center">
                       <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path>
                       </svg>
-                      {{ event.attachment.name }}
+                      {{ event.attachment_path.split('\\').pop() }}
                     </a>
                   </div>
                 </div>
@@ -71,36 +70,61 @@
   </template>
   
   <script setup>
-  import { ref, computed } from 'vue'
+  import { ref, computed, onMounted } from 'vue'
+  import axios from 'axios'
   
   const events = ref([])
   const newEvent = ref({
     title: '',
     date: '',
     description: '',
-    attachment: null
+    attachment_path: null
   })
   
+  const API_BASE_URL = "http://127.0.0.1:3000"
+
   const handleFileUpload = (event) => {
     const file = event.target.files[0]
     if (file) {
-      newEvent.value.attachment = {
-        name: file.name,
-        url: URL.createObjectURL(file)
-      }
+      newEvent.value.attachment_path = file
     }
   }
   
-  const addEvent = () => {
-    events.value.push({
-      id: Date.now(),
-      ...newEvent.value
-    })
-    newEvent.value = { title: '', date: '', description: '', attachment: null }
-    // 重置文件输入
-    const fileInput = document.getElementById('eventAttachment')
-    if (fileInput) fileInput.value = ''
+  const addEvent = async () => {
+    const formData = new FormData()
+    formData.append('title', newEvent.value.title)
+    formData.append('date', newEvent.value.date)
+    formData.append('description', newEvent.value.description)
+    if (newEvent.value.attachment_path) {
+      formData.append('attachment_path', newEvent.value.attachment_path)
+    }
+
+    try {
+      const response = await axios.post(`${API_BASE_URL}/api/timeline`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        },
+        withCredentials: true // 携带凭证
+      })
+      events.value.push(response.data)
+      newEvent.value = { title: '', date: '', description: '', attachment_path: null }
+      const fileInput = document.getElementById('eventAttachment')
+      if (fileInput) fileInput.value = ''
+    } catch (error) {
+      console.error('Error adding event:', error)
+    }
   }
+  
+  const fetchEvents = async () => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/api/timeline`, { withCredentials: true })
+      events.value = response.data
+    } catch (error) {
+      console.error('Error fetching events:', error)
+    }
+  }
+  
+  onMounted(fetchEvents)
   
   const sortedEvents = computed(() => {
     return [...events.value].sort((a, b) => new Date(a.date) - new Date(b.date))

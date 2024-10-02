@@ -38,6 +38,17 @@ db.query(`
   )
 `);
 
+// 创建 card_timeLine 表
+db.query(`
+  CREATE TABLE IF NOT EXISTS card_timeLine (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    date DATE NOT NULL,
+    description TEXT,
+    attachment_path VARCHAR(255)
+  )
+`);
+
 // 获取目录和文件
 router.get('/directories', (req, res) => {
   db.query("SELECT * FROM directories", (err, directories) => {
@@ -65,6 +76,11 @@ router.get('/directories', (req, res) => {
 // 创建目录
 router.post('/directories', (req, res) => {
   const { name } = req.body;
+  const personaId = req.session.personaId; // 获取 persona_id
+
+  if (personaId == 707) {
+    return res.status(403).json({ message: 'Permission denied' });
+  }
 
   db.query("SELECT * FROM directories WHERE name = ?", [name], (err, rows) => {
     if (rows.length > 0) {
@@ -90,6 +106,12 @@ router.post('/directories', (req, res) => {
 // 添加文件
 router.post('/files', upload.single('file'), (req, res) => {
   const { directory_id, name } = req.body;
+  const personaId = req.session.personaId; // 获取 persona_id
+
+  if (personaId == 707) {
+    return res.status(403).json({ message: 'Permission denied' });
+  }
+
   db.query("SELECT * FROM directories WHERE id = ?", [directory_id], (err, rows) => {
     if (rows.length > 0) {
       const directory = rows[0];
@@ -116,6 +138,12 @@ router.post('/files', upload.single('file'), (req, res) => {
 // 删除文件
 router.delete('/files/:file_id', (req, res) => {
   const { file_id } = req.params;
+  const personaId = req.session.personaId; // 获取 persona_id
+
+  if (personaId == 707) {
+    return res.status(403).json({ message: 'Permission denied' });
+  }
+
   db.query("SELECT * FROM files WHERE id = ?", [file_id], (err, rows) => {
     if (rows.length > 0) {
       const file = rows[0];
@@ -143,7 +171,6 @@ router.get('/files/:file_id/download', (req, res) => {
   db.query("SELECT * FROM files WHERE id = ?", [file_id], (err, rows) => {
     if (rows.length > 0) {
       const file = rows[0];
-      console.log(__dirname)
       const filePath = path.join(__dirname, file.path);
       res.download(filePath, file.name, (err) => {
         if (err) {
@@ -152,6 +179,73 @@ router.get('/files/:file_id/download', (req, res) => {
       });
     } else {
       res.status(404).json({ error: 'File not found' });
+    }
+  });
+});
+
+// 添加时间线事件
+router.post('/timeline', upload.single('attachment_path'), (req, res) => {
+  const { title, date, description } = req.body;
+  const personaId = req.session.personaId; // 获取 persona_id
+
+  if (personaId == 707) {
+    return res.status(403).json({ message: 'Permission denied' });
+  }
+
+  const attachment = req.file;
+  let attachmentPath = null;
+  if (attachment) {
+    const uploadDir = path.join(__dirname, UPLOAD_FILE_BASE, date, title);
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    const decodedOriginalName = Buffer.from(attachment.originalname, 'latin1').toString('utf8');
+    const absoluteAttachmentPath = path.join(uploadDir, decodedOriginalName);
+    attachmentPath = path.relative(__dirname, absoluteAttachmentPath);
+    fs.renameSync(attachment.path, absoluteAttachmentPath);
+  }
+
+  db.query(
+    "INSERT INTO card_timeLine (title, date, description, attachment_path) VALUES (?, ?, ?, ?)",
+    [title, date, description, attachmentPath],
+    (err, result) => {
+      if (err) {
+        return res.status(500).json({ error: err.message });
+      }
+      res.json({ id: result.insertId, title, date, description, "attachment_path": attachmentPath });
+    }
+  );
+});
+
+// 获取时间线事件
+router.get('/timeline', (req, res) => {
+  db.query("SELECT * FROM card_timeLine ORDER BY date ASC", (err, rows) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    
+    res.json(rows);
+  });
+});
+
+// 下载时间线附件
+router.get('/timeline/:id/download', (req, res) => {
+  const { id } = req.params;
+  db.query("SELECT * FROM card_timeLine WHERE id = ?", [id], (err, rows) => {
+    if (rows.length > 0) {
+      const event = rows[0];
+      if (event.attachment_path) {
+        const filePath = path.join(__dirname, event.attachment_path);
+        res.download(filePath, path.basename(filePath), (err) => {
+          if (err) {
+            return res.status(500).json({ error: '文件下载失败',message:err.message });
+          }
+        });
+      } else {
+        res.status(404).json({ error: '附件不存在' });
+      }
+    } else {
+      res.status(404).json({ error: '事件未找到' });
     }
   });
 });
