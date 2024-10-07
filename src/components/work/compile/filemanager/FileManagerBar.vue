@@ -170,6 +170,7 @@
   
   <script>
   import axios from 'axios'
+  import config from '../../../../util/config'
 
   export default {
     data() {
@@ -181,14 +182,13 @@
         showErrorModal: false,
         errorMessage: '',
         showDeleteConfirmModal: false,
-        fileIdToDelete: null,
-        API_BASE_URL: 'http://127.0.0.1:3000'
+        fileIdToDelete: null
       }
     },
     methods: {
       async fetchDirectories() {
         try {
-          const response = await axios.get(`${this.API_BASE_URL}/api/directories`, {
+          const response = await axios.get(`${config.getSetting('API_BASE_URL')}/api/directories`, {
             withCredentials: true
           })
           this.directories = response.data
@@ -198,7 +198,7 @@
       },
       createDirectory() {
         if (this.newDirectoryName.trim()) {
-          axios.post(`${this.API_BASE_URL}/api/directories`, {
+          axios.post(`${config.getSetting('API_BASE_URL')}/api/directories`, {
             name: this.newDirectoryName.trim()
           }, {
             withCredentials: true
@@ -226,7 +226,7 @@
           formData.append('name', this.newFileName.trim())
 
           try {
-            const response = await axios.post(`${this.API_BASE_URL}/api/files`, formData, {
+            const response = await axios.post(`${config.getSetting('API_BASE_URL')}/api/files`, formData, {
               headers: {
                 'Content-Type': 'multipart/form-data'
               },
@@ -252,7 +252,7 @@
       },
       confirmDeleteFile() {
         if (this.fileIdToDelete !== null) {
-          axios.delete(`${this.API_BASE_URL}/api/files/${this.fileIdToDelete}`, {
+          axios.delete(`${config.getSetting('API_BASE_URL')}/api/files/${this.fileIdToDelete}`, {
             withCredentials: true
           })
           .then(response => {
@@ -283,7 +283,7 @@
       },
       downloadFile(fileId) {
         const link = document.createElement('a');
-        link.href = `${this.API_BASE_URL}/api/files/${fileId}/download`;
+        link.href = `${config.getSetting('API_BASE_URL')}/api/files/${fileId}/download`;
         link.setAttribute('download', '');
         document.body.appendChild(link);
         link.click();

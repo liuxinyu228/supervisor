@@ -86,9 +86,9 @@
   import { ref, onMounted } from 'vue'
   import axios from 'axios'
   import { PlusIcon, CheckIcon } from 'lucide-vue-next'
+  import config from '../../util/config'
   
   const tasks = ref([])
-  const API_BASE_URL = 'http://127.0.0.1:3000'
   const work_classification = {
     101: '新技术新业务安全评估',
     102: '涉诈风险安全评估',
@@ -96,7 +96,7 @@
   
   const fetchTasks = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/api/admin/GetUserWorkStatuses`,{withCredentials: true})
+      const response = await axios.get(`${config.getSetting('API_BASE_URL')}/api/admin/GetUserWorkStatuses`,{withCredentials: true})
       tasks.value = response.data.map(task => {
         // 解析 tasks 字段
         const taskDetails = JSON.parse(task.tasks)

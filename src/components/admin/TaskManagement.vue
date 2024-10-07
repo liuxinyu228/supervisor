@@ -102,6 +102,7 @@
 <script>
 import TaskModal from './TaskModal.vue'
 import axios from 'axios'
+import config from '../../util/config'
 
 export default {
   components: {
@@ -109,7 +110,7 @@ export default {
   },
   data() {
     return {
-      API_BASE_URL : "http://127.0.0.1:3000",
+
       activeTab: 'tasks',
       taskHeaders: ['title', 'work_classification', 'description', 'guide', 'taskCategory'],
       tasks: [],
@@ -178,7 +179,7 @@ export default {
     },
     async addTask(task) {
       try {
-        const response = await axios.post(`${this.API_BASE_URL}/api/taskTemplate`, task,{ withCredentials: true });
+        const response = await axios.post(`${config.getSetting('API_BASE_URL')}/api/taskTemplate`, task,{ withCredentials: true });
         this.tasks.push({ ...task, id: response.data.taskId });
         this.showMessage('Task added successfully');
         this.showTaskModal = false;
@@ -189,7 +190,7 @@ export default {
     },
     async updateTask(task) {
       try {
-        await axios.post(`${this.API_BASE_URL}/api/updateTaskTemplate/${task.id}`, task,{ withCredentials: true });
+        await axios.post(`${config.getSetting('API_BASE_URL')}/api/updateTaskTemplate/${task.id}`, task,{ withCredentials: true });
         const index = this.tasks.findIndex(t => t.id === task.id);
         if (index !== -1) {
           this.tasks.splice(index, 1, task);
@@ -207,7 +208,7 @@ export default {
     },
     async confirmDeleteTask() {
       try {
-        await axios.delete(`${this.API_BASE_URL}/api/taskTemplate/${this.taskIdToDelete}`,{ withCredentials: true });
+        await axios.delete(`${config.getSetting('API_BASE_URL')}/api/taskTemplate/${this.taskIdToDelete}`,{ withCredentials: true });
         this.tasks = this.tasks.filter(task => task.id !== this.taskIdToDelete);
         this.confirmDelete = false;
       } catch (error) {
@@ -217,7 +218,7 @@ export default {
     },
     async fetchTasks() {
       try {
-        const response = await axios.get(`${this.API_BASE_URL}/api/taskTemplate/ALL`,{ withCredentials: true });
+        const response = await axios.get(`${config.getSetting('API_BASE_URL')}/api/taskTemplate/ALL`,{ withCredentials: true });
         this.tasks = response.data;
       } catch (error) {
         console.error('Error fetching tasks:', error);

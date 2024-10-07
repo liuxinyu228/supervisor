@@ -122,6 +122,7 @@
   import { reactive } from 'vue'
   import { encrypt } from '@/util/util.js'
   import Cookies from 'js-cookie'
+  import config from '../../util/config'
 
   export default {
     data() {
@@ -146,8 +147,7 @@
     methods: {
       async handleSubmit() {
         try {
-          const API_BASE_URL = 'http://127.0.0.1:3000'
-          const response = await fetch(`${API_BASE_URL}/api/addUserWork`, {
+          const response = await fetch(`${config.getSetting('API_BASE_URL')}/api/addUserWork`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'

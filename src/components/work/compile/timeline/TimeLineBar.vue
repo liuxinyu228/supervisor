@@ -72,6 +72,7 @@
   <script setup>
   import { ref, computed, onMounted } from 'vue'
   import axios from 'axios'
+  import config from '../../../../util/config'
   
   const events = ref([])
   const newEvent = ref({
@@ -81,7 +82,6 @@
     attachment_path: null
   })
   
-  const API_BASE_URL = "http://127.0.0.1:3000"
 
   const handleFileUpload = (event) => {
     const file = event.target.files[0]
@@ -100,7 +100,7 @@
     }
 
     try {
-      const response = await axios.post(`${API_BASE_URL}/api/timeline`, formData, {
+      const response = await axios.post(`${config.getSetting('API_BASE_URL')}/api/timeline`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         },
@@ -117,7 +117,7 @@
   
   const fetchEvents = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/api/timeline`, { withCredentials: true })
+      const response = await axios.get(`${config.getSetting('API_BASE_URL')}/api/timeline`, { withCredentials: true })
       events.value = response.data
     } catch (error) {
       console.error('Error fetching events:', error)

@@ -105,6 +105,8 @@
   <script>
   import { formatDate } from '@/util/util';
   import axios from 'axios';
+  import config from '../../../util/config'
+
   export default {
     props: {
       task: {
@@ -127,8 +129,7 @@
     },
     computed: {
       downloadLink() {
-        const API_BASE_URL = 'http://127.0.0.1:3000';
-        return `${API_BASE_URL}/api/downloadTaskMaterial/${this.editedTask.id}`;
+        return `${config.getSetting('API_BASE_URL')}/api/downloadTaskMaterial/${this.editedTask.id}`;
       }
     },
     methods: {
@@ -155,7 +156,6 @@
         this.showStatusModal = false; // 关闭状态选择弹窗
       },
       confirmStatus() {
-        const API_BASE_URL = 'http://127.0.0.1:3000';
         this.editedTask.status = this.Status; // 设置任务状态
         
         // 定义 formData 参数
@@ -166,7 +166,7 @@
         };
         console.log(this.editedTask);
         // 使用 fetch 调用 /updateTask/:taskId 接口修改任务内容
-        fetch(`${API_BASE_URL}/api/updateTask/${this.editedTask.id}`, {
+        fetch(`${config.getSetting('API_BASE_URL')}/api/updateTask/${this.editedTask.id}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -197,9 +197,7 @@
         const formData = new FormData();
         formData.append('file', file);
 
-        const API_BASE_URL = 'http://127.0.0.1:3000';
-
-        fetch(`${API_BASE_URL}/api/updateTaskMaterial/${this.editedTask.id}`, {
+        fetch(`${config.getSetting('API_BASE_URL')}/api/updateTaskMaterial/${this.editedTask.id}`, {
           method: 'POST',
           credentials: 'include', // 携带凭证
           body: formData
@@ -235,10 +233,8 @@
         // 从 editedTask.materialPath 中移除指定的文件
         this.editedTask.materialPath = this.editedTask.materialPath.filter(file => file.id !== fileId);
 
-        const API_BASE_URL = 'http://127.0.0.1:3000';
-
         // 调用后端接口更新数据库
-        fetch(`${API_BASE_URL}/api/removeTaskMaterial/${this.editedTask.id}`, {
+        fetch(`${config.getSetting('API_BASE_URL')}/api/removeTaskMaterial/${this.editedTask.id}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -264,8 +260,7 @@
         });
       },
       downloadFile(fileId) {
-        const API_BASE_URL = 'http://127.0.0.1:3000';
-        const downloadUrl = `${API_BASE_URL}/api/downloadTaskMaterial/${this.editedTask.id}?fileId=${fileId}`;
+        const downloadUrl = `${config.getSetting('API_BASE_URL')}/api/downloadTaskMaterial/${this.editedTask.id}?fileId=${fileId}`;
 
         axios.get(downloadUrl, {
             responseType: 'blob', // 确保响应类型为 blob

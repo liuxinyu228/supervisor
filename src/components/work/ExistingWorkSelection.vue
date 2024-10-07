@@ -157,6 +157,7 @@
   import { ref, computed, onMounted } from 'vue'
   import { encrypt } from '@/util/util.js'
   import Cookies from 'js-cookie'
+  import config from '../../util/config'
 
   export default {
     setup() {
@@ -165,11 +166,10 @@
       const currentPage = ref(1)
       const itemsPerPage = 5
       const totalPages = ref(1)
-      const API_BASE_URL = 'http://127.0.0.1:3000'
 
       const fetchTasks = async () => {
         try {
-          const response = await fetch(`${API_BASE_URL}/api/userWorks?limit=${itemsPerPage}&page=${currentPage.value}`, {
+          const response = await fetch(`${config.getSetting('API_BASE_URL')}/api/userWorks?limit=${itemsPerPage}&page=${currentPage.value}`, {
             credentials: 'include' // 携带凭证
           });
           const data = await response.json();

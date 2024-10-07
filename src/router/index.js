@@ -6,9 +6,9 @@ import CreateTaskMange from '../components/work/CreateWorkMange.vue';
 import UserLogin from '../components/UserLogin.vue';
 import FileManager from '../components/work/compile/filemanager/FileManagerBar.vue';
 import AdminDashboard from '../components/admin/AdminDashboard.vue';
+import config from '../util/config';
 
 
-const API_BASE_URL = 'http://127.0.0.1:3000';
 const routes = [
   {
     path: '/compile',
@@ -31,7 +31,7 @@ const router = createRouter({
 
 // 导航守卫
 router.beforeEach(async (to, from, next) => {
-  const response = await fetch(`${API_BASE_URL}/api/checkLogin`, {
+  const response = await fetch(`${config.getSetting('API_BASE_URL')}/api/checkLogin`, {
     credentials: 'include' // 携带凭证
   });
   const data = await response.json();
@@ -40,7 +40,7 @@ router.beforeEach(async (to, from, next) => {
     next('/login'); // 未登录，跳转到登录页面
   } else if (to.path === '/admin') {
     // 检查管理员权限
-    const adminResponse = await fetch('http://127.0.0.1:3000/api/checkAdmin', {
+    const adminResponse = await fetch(`${config.getSetting('API_BASE_URL')}/api/checkAdmin`, {
       credentials: 'include'
     });
     const adminData = await adminResponse.json();

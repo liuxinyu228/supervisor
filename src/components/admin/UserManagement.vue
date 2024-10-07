@@ -93,6 +93,7 @@
 <script>
 import UserModal from './UserModal.vue';
 import axios from 'axios';
+import config from '../../util/config'
 
 export default {
   components: {
@@ -142,8 +143,7 @@ export default {
   methods: {
     async fetchUsers() {
       try {
-        const API_URL = 'http://127.0.0.1:3000';
-        const response = await axios.get(`${API_URL}/api/getAllUsers`, { withCredentials: true }); // 携带凭证
+        const response = await axios.get(`${config.getSetting('API_BASE_URL')}/api/getAllUsers`, { withCredentials: true }); // 携带凭证
         this.users = response.data;
       } catch (error) {
         this.message = 'Error fetching users: ' + error.message;
@@ -175,8 +175,7 @@ export default {
     async addUser(user) {
       try {
         console.log(user)
-        const API_URL = 'http://127.0.0.1:3000';
-        const response = await axios.post(`${API_URL}/api/addUser`, user, { withCredentials: true });
+        const response = await axios.post(`${config.getSetting('API_BASE_URL')}/api/addUser`, user, { withCredentials: true });
         if (response.status === 201) {
         user.id = response.data.userId;
         this.users.push(user);
@@ -190,9 +189,7 @@ export default {
     },
     async updateUser(user) {
       try {
-        const API_URL = 'http://127.0.0.1:3000';
-        
-        const response = await axios.post(`${API_URL}/api/updateUser`, user, { withCredentials: true });
+        const response = await axios.post(`${config.getSetting('API_BASE_URL')}/api/updateUser`, user, { withCredentials: true });
         if (response.status === 200) {
           const index = this.users.findIndex(u => u.id === user.id);
           if (index !== -1) {
@@ -205,8 +202,7 @@ export default {
     },
     async deleteUser(user_id) {
       try {
-        const API_URL = 'http://127.0.0.1:3000';
-        const response = await axios.delete(`${API_URL}/api/deleteUser`, {
+        const response = await axios.delete(`${config.getSetting('API_BASE_URL')}/api/deleteUser`, {
           data: { user_id },
           withCredentials: true
         });

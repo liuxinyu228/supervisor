@@ -11,6 +11,7 @@ import TaskSelection from './CreateWorkSelectionBar.vue'
 import CreateTaskForm from './CreateWorkFormBar.vue'
 import ExistingTaskSelection from './ExistingWorkSelection.vue'
 import axios from 'axios'; // 新增此行
+import config from '../../util/config'
 
 export default {
   components: {
@@ -32,7 +33,7 @@ export default {
     },
     async fetchUserInfo() { // 新增此方法
       try {
-        const response = await axios.get('http://127.0.0.1:3000/api/getUserInfo', { withCredentials: true }); // 使用 axios 进行 API 调用并携带凭证
+        const response = await axios.get(`${config.getSetting('API_BASE_URL')}/api/getUserInfo`, { withCredentials: true }); // 使用 axios 进行 API 调用并携带凭证
         this.personaId = response.data.personaId;
         if (this.personaId === 707) {
           this.currentView = 'existing';

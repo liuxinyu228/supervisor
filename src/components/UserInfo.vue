@@ -9,11 +9,11 @@
 
 <script>
 import axios from 'axios';
+import config from '../util/config'
 
 export default {
   data() {
     return {
-      API_BASE_URL:"http://127.0.0.1:3000",
       showOptions: false,
       userInfo: null,
     };
@@ -23,7 +23,7 @@ export default {
       this.showOptions = !this.showOptions;
     },
     logout() {
-      axios.post(`${this.API_BASE_URL}/api/logout`, {}, { withCredentials: true })
+      axios.post(`${config.getSetting('API_BASE_URL')}/api/logout`, {}, { withCredentials: true })
         .then(response => {
           console.log(response.data.message);
           // 处理成功注销后的逻辑，比如重定向到登录页面
@@ -35,7 +35,7 @@ export default {
         });
     },
     getUserInfo() {
-      axios.get(`${this.API_BASE_URL}/api/getUserInfo`, { withCredentials: true })
+      axios.get(`${config.getSetting('API_BASE_URL')}/api/getUserInfo`, { withCredentials: true })
         .then(response => {
           this.userInfo = response.data;
           console.log('User Info:', this.userInfo);

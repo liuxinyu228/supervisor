@@ -85,6 +85,7 @@
   <script>
   import { ref, reactive, onMounted } from 'vue'
   import { useRouter } from 'vue-router'
+  import config from '../util/config'
 
   export default {
     setup() {
@@ -100,12 +101,10 @@
       const isLoading = ref(false)
       const router = useRouter()
 
-      // 假设这是您的API基础URL
-      const API_BASE_URL = 'http://127.0.0.1:3000'
-
       async function getCaptcha() {
         try {
-          const response = await fetch(`${API_BASE_URL}/api/captcha`)
+          console.log(config.getSetting('API_BASE_URL'))
+          const response = await fetch(`${config.getSetting('API_BASE_URL')}/api/captcha`)
           if (!response.ok) {
             throw new Error('获取验证码失败')
           }
@@ -132,7 +131,7 @@
         error.value = ''
 
         try {
-          const response = await fetch(`${API_BASE_URL}/api/login`, {
+          const response = await fetch(`${config.getSetting('API_BASE_URL')}/api/login`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -166,7 +165,7 @@
 
       async function checkLogin() {
         try {
-          const response = await fetch(`${API_BASE_URL}/api/checkLogin`, {
+          const response = await fetch(`${config.getSetting('API_BASE_URL')}/api/checkLogin`, {
             credentials: 'include' // 携带凭证
           })
           const data = await response.json()

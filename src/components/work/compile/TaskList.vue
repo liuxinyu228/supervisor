@@ -40,6 +40,7 @@
 import TaskItem from './TaskItem.vue';
 import TaskPagination from './PaginationBar.vue';
 import TaskEditModal from './EditModalBar.vue';
+import config from '../../../util/config'
 
 export default {
   components: {
@@ -95,8 +96,7 @@ export default {
   methods: {
     async loadTasks() {
       try {
-        const API_BASE_URL = "http://127.0.0.1:3000"
-        const response = await fetch(`${API_BASE_URL}/api/userWorkTasks`, {
+        const response = await fetch(`${config.getSetting('API_BASE_URL')}/api/userWorkTasks`, {
           credentials: 'include' // 确保请求时携带 Cookie
         });
         const data = await response.json();
