@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 const { v4: uuidv4 } = require('uuid');  // 用于生成唯一ID
 const router = express.Router();
 const db = require('../config/db');  // 引入数据库连接
+const cardUser = require('../models/cardUser'); // 引入cardUser模型
 
 // 使用 body-parser 来解析请求体
 router.use(bodyParser.json());
@@ -91,6 +92,101 @@ router.get('/getUserInfo', (req, res) => {
         });
     } else {
         res.status(401).json({ message: 'User not logged in' });
+    }
+});
+
+// 新增用户接口
+router.post('/addUser', (req, res) => {
+    const user = req.body;
+
+    // 生成随机密码
+    const generateRandomPassword = () => {
+        const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()';
+        let password = '';
+        for (let i = 0; i < 8; i++) {
+            const randomIndex = Math.floor(Math.random() * chars.length);
+            password += chars[randomIndex];
+        }
+        return password;
+    };
+
+    user.password = generateRandomPassword();
+
+    // 查询是否有已存在的用户名
+    const query = 'SELECT * FROM card_users WHERE username = ?';
+    db.query(query, [user.username], (err, results) => {
+        if (err) {
+            return res.status(500).json({ message: 'Database error', error: err });
+        }
+
+        if (results.length > 0) {
+            return res.status(400).json({ message: 'Username already exists' });
+        }
+
+        // 如果用户名不存在，则添加用户
+        cardUser.addUser(user, (err, result) => {
+            if (err) {
+                return res.status(500).json({ message: 'Database error', error: err });
+            }
+            res.status(201).json({ message: 'User added successfully', userId: result.insertId, password: user.password });
+        });
+    });
+});
+
+// 新增 /getAllUsers 接口，查询所有用户
+router.get('/getAllUsers', (req, res) => {
+    cardUser.getAllUsers((err, users) => {
+        if (err) {
+            return res.status(500).json({ message: 'Database error', error: err });
+        }
+        res.json(users);
+    });
+});
+
+// 新增 /updateUser 接口，更新用户信息
+router.post('/updateUser', (req, res) => {
+    const { id, username, status, email, is_admin, phone, group_id, persona_id } = req.body;
+
+    const user = { username, status, email, is_admin, phone, group_id, persona_id };
+
+    cardUser.updateUser(id, user, (err, result) => {
+        if (err) {
+            return res.status(500).json({ message: 'Database error', error: err });
+        }
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        res.status(200).json({ message: 'User updated successfully' });
+    });
+});
+
+// 新增 /deleteUser 接口，删除用户
+router.delete('/deleteUser', (req, res) => {
+    const { user_id } = req.body;
+
+    cardUser.deleteUser(user_id, (err, result) => {
+        if (err) {
+            return res.status(500).json({ message: 'Database error', error: err });
+        }
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        res.status(200).json({ message: 'User deleted successfully' });
+    });
+});
+
+// 新增 /logout 接口，处理用户注销
+router.post('/logout', (req, res) => {
+    if (req.session) {
+        // 销毁会话
+        req.session.destroy(err => {
+            if (err) {
+                return res.status(500).json({ message: 'Logout failed', error: err });
+            }
+            res.status(200).json({ message: 'Logout successful' });
+        });
+    } else {
+        res.status(400).json({ message: 'No active session' });
     }
 });
 

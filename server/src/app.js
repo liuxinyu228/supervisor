@@ -2,6 +2,7 @@ const express = require('express');
 const cookieParser = require('cookie-parser');
 const userRoutes = require('./routes/userRoutes');
 const taskRoutes = require('./routes/taskRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 const fileManagerRoutes = require('./utils/filemanager')
 const app = express();
 const cors = require('cors');
@@ -9,7 +10,7 @@ const session = require('express-session');
 
 app.use(express.json()); // 用于解析JSON格式的请求体
 app.use(cors({
-  origin: 'http://127.0.0.1:8135', // 前端地址
+  origin: 'http://127.0.0.1:8080', // 前端地址
   credentials: true // 允许携带凭证
 }));
 
@@ -39,5 +40,5 @@ function isLoggedIn(req, res, next) {
 app.use('/api', isLoggedIn, userRoutes);
 app.use('/api', isLoggedIn, taskRoutes);
 app.use('/api', isLoggedIn, fileManagerRoutes);
-
+app.use('/api/admin', isLoggedIn, adminRoutes);
 module.exports = app;

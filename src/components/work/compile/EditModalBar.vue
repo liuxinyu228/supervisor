@@ -27,12 +27,41 @@
         <div v-if="!isViewOnly">
           <input
             type="file"
+            accept=".jpeg,.png,.jpg"
             @change="handleFileUpload"
             class="w-full border p-2 mb-4"
           />
+          <div v-if="editedTask.materialPath.length > 0" class="flex flex-wrap gap-2">
+            <div
+              v-for="(file, index) in editedTask.materialPath"
+              :key="index"
+              class="px-3 py-1 bg-gray-200 text-gray-700 rounded-full text-sm flex items-center"
+               @click="downloadFile(file.id)"
+              >
+              <span class="mr-1">{{ file.path }}</span>
+              <button
+                @click="removeFile(file.id)"
+                class="text-gray-500 hover:text-gray-700 focus:outline-none"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
         </div>
+    
         <div v-else class="w-full border p-2 mb-4">
-          <a :href="downloadLink" target="_blank">{{ editedTask.materialPath }}</a>
+          <div v-if="editedTask.materialPath.length > 0" class="flex flex-wrap gap-2">
+            <div
+              v-for="(file, index) in editedTask.materialPath"
+              :key="index"
+              class="px-3 py-1 bg-gray-200 text-gray-700 rounded-full text-sm flex items-center"
+              @click="downloadFile(file.id)"
+            >
+              <span class="mr-1">{{ file.path }}</span>
+            </div>
+          </div>
         </div>
   
         <label class="block mb-2">风险判断：</label>
@@ -75,6 +104,7 @@
   
   <script>
   import { formatDate } from '@/util/util';
+  import axios from 'axios';
   export default {
     props: {
       task: {
@@ -103,6 +133,7 @@
     },
     methods: {
       initializeTask() {
+        console.log(this.task.materialPath)
         return {
           id: this.task.id,
           title: this.task.title ? this.task.title : '',
@@ -110,7 +141,7 @@
           description: this.task.description ? this.task.description : '',
           guide: this.task.guide ? this.task.guide : '',
           reportContent: this.task.reportContent ? this.task.reportContent : '',
-          materialPath: this.task.materialPath ? this.task.materialPath : "",
+          materialPath: this.task.materialPath ? this.task.materialPath : [{id:1,path:""}],
           riskValue: this.task.riskValue ? this.task.riskValue : 'low',
           status: this.task.status ? this.task.status : '待开始',
           created_at: this.task.created_at,
@@ -131,7 +162,6 @@
         const formData = {
           status: this.editedTask.status ?  this.editedTask.status : '进行中',
           reportContent: this.editedTask.reportContent ? this.editedTask.reportContent : '',
-          materialPath: this.editedTask.materialPath ? this.editedTask.materialPath : "",
           riskValue: this.editedTask.riskValue ? this.editedTask.riskValue : 'low'
         };
         console.log(this.editedTask);
@@ -152,7 +182,7 @@
             this.showStatusModal = false; // 关闭状态选择弹窗
             return;
           }
-          this.$emit('save', this.editedTask); // 触发保存事件，并传递编辑后的任务
+          this.$emit('save', this.editedTask, true); // 触发保存事件，并传递编辑后的任务
           this.editedTask.updated_at = formatDate(); // 修改updated_at，格式为YYYY-MM-DD HH:mm
           this.showStatusModal = false; // 关闭状态选择弹窗
           this.showAlertMessage('任务更新成功');
@@ -176,13 +206,17 @@
         })
         .then(response => {
           if (!response.ok) {
-            this.showAlertMessage('文件上传失败');
+            if (response.status === 400) {
+              this.showAlertMessage('文件上传数量达到最大'); 
+              return;
+            }
+            this.showAlertMessage('文件上传失败'); 
             return;
           }
-          return response.json();
-        })
-        .then(data => {
-          this.editedTask.materialPath = data.filePath; // 更新任务的 materialPath
+
+          const data =  response.json();
+          this.editedTask.materialPath = data.filePath;
+          this.$emit('save', this.editedTask, false); // 触发保存事件，并传递编辑后的任务
           this.showAlertMessage('文件上传成功');
         })
         .catch(error => {
@@ -196,7 +230,56 @@
       },
       closeAlert() {
         this.showAlert = false;
-      }
+      },
+      removeFile(fileId) {
+        // 从 editedTask.materialPath 中移除指定的文件
+        this.editedTask.materialPath = this.editedTask.materialPath.filter(file => file.id !== fileId);
+
+        const API_BASE_URL = 'http://127.0.0.1:3000';
+
+        // 调用后端接口更新数据库
+        fetch(`${API_BASE_URL}/api/removeTaskMaterial/${this.editedTask.id}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include', // 携带凭证
+          body: JSON.stringify({ fileId })
+        })
+        .then(response => {
+          if (!response.ok) {
+            this.showAlertMessage('文件移除失败');
+            return;
+          }
+          return response.json();
+        })
+        .then(data => {
+          this.showAlertMessage('文件移除成功');
+          // 更新前端的 materialPath
+          this.editedTask.materialPath = data.materialPath;
+        })
+        .catch(error => {
+          console.error('文件移除失败:', error);
+          this.showAlertMessage('文件移除失败');
+        });
+      },
+      downloadFile(fileId) {
+        const API_BASE_URL = 'http://127.0.0.1:3000';
+        const downloadUrl = `${API_BASE_URL}/api/downloadTaskMaterial/${this.editedTask.id}?fileId=${fileId}`;
+
+        axios.get(downloadUrl, {
+            responseType: 'blob', // 确保响应类型为 blob
+            withCredentials: true // 携带凭证
+        })
+        .then(response => {
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            window.open(url, '_blank'); // 在新窗口中打开文件
+        })
+        .catch(error => {
+            console.error('文件预览失败:', error);
+            this.showAlertMessage('文件预览失败');
+        });
+      },
     },
   };
   </script>

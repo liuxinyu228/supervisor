@@ -135,12 +135,14 @@ export default {
       this.selectedTask = null;
     },
     // 保存编辑的任务
-    saveTask(updatedTask) {
+    saveTask(updatedTask, closeHandle) {
       const index = this.tasks.findIndex(task => task.id === updatedTask.id);
       if (index !== -1) {
         this.tasks.splice(index, 1, updatedTask); // 更新任务
       }
-      this.closeEditModal(); // 关闭弹窗
+      if (closeHandle) {
+        this.closeEditModal(); // 关闭弹窗
+      }
     },
     // 处理筛选条件
     handleFilterTasks(filter) {

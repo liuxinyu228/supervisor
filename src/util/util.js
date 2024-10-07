@@ -8,6 +8,12 @@ export function encrypt(data) {
   return encrypted;
 }
 
+export function decrypt(encryptedData) {
+  const bytes = CryptoJS.AES.decrypt(encryptedData, key);
+  const decrypted = bytes.toString(CryptoJS.enc.Utf8);
+  return decrypted;
+}
+
 export function formatDate() {
   // 获取当前时间 格式为YYYY-MM-DD HH:mm
   const date = new Date();
@@ -20,4 +26,6 @@ export function formatDate() {
 
   return `${year}-${month}-${day} ${hour}:${minute}`;
 }
+
+
 

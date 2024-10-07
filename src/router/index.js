@@ -1,10 +1,11 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import MainLayout from '../components/compile/MainLayout.vue';
-import TaskPage from '../components/compile/TaskPage.vue';
-import TaskTimeLine from '../components/compile/timeline/TimeLineBar.vue';
-import CreateTaskMange from '../components/CreateWorkMange.vue';
+import MainLayout from '../components/work/compile/MainLayout.vue';
+import TaskPage from '../components/work/compile/TaskPage.vue';
+import TaskTimeLine from '../components/work/compile/timeline/TimeLineBar.vue';
+import CreateTaskMange from '../components/work/CreateWorkMange.vue';
 import UserLogin from '../components/UserLogin.vue';
-import FileManager from '../components/compile/filemanager/FileManagerBar.vue';
+import FileManager from '../components/work/compile/filemanager/FileManagerBar.vue';
+import AdminDashboard from '../components/admin/AdminDashboard.vue';
 
 const routes = [
   {
@@ -18,6 +19,7 @@ const routes = [
   },
   { path: '/opt', component: CreateTaskMange },
   { path: '/login', component: UserLogin },
+  { path: '/admin', component: AdminDashboard },
 ];
 
 const router = createRouter({

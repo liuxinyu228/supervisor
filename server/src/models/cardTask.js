@@ -5,8 +5,51 @@ const { decrypt } = require('../utils/util');
 class cardTaskTemplate {
     // 根据工作分类 workClassification 查询所有的任务详情。
     static getAllTaskByType(taskType, callback) {
-        const sql = 'SELECT * FROM card_task_template where workClassification = ?';
-        connection.query(sql, [taskType], callback);
+        let sql;
+        let params;
+        if (taskType === 'ALL') {
+            sql = 'SELECT * FROM card_task_template';
+            params = [];
+        } else {
+            sql = 'SELECT * FROM card_task_template where workClassification = ?';
+            params = [taskType];
+        }
+        connection.query(sql, params, callback);
+    }
+
+    // 新增任务
+    static addTask(taskInfo, callback) {
+        const sql = `
+            INSERT INTO card_task_template 
+            (title, work_classification, description, guide, created_at, updated_at, taskCategory) 
+            VALUES (?, ?, ?, ?, NOW(), NOW(), ?);
+        `;
+        const { title, work_classification, description, guide, taskCategory } = taskInfo;
+        connection.query(sql, [title, work_classification, description, guide, taskCategory], callback);
+    }
+
+    // 更新任务
+    static updateTaskById(id, updatedTaskInfo, callback) {
+        const sql = `
+            UPDATE card_task_template 
+            SET
+                title = ?,
+                work_classification = ?,
+                description = ?,
+                guide = ?,
+                updated_at = NOW(),
+                taskCategory = ?
+            WHERE 
+                id = ?;
+        `;
+        const { title, work_classification, description, guide, taskCategory } = updatedTaskInfo;
+        connection.query(sql, [title, work_classification, description, guide, taskCategory, id], callback);
+    }
+
+    // 删除任务
+    static deleteTaskById(id, callback) {
+        const sql = 'DELETE FROM card_task_template WHERE id = ?';
+        connection.query(sql, [id], callback);
     }
 }
 
@@ -62,7 +105,6 @@ class cardTask {
             SET
                 status = ? ,
                 reportContent = ?, 
-                materialPath = ?, 
                 riskValue = ?,
                 updated_at = NOW()
             WHERE 
@@ -71,7 +113,6 @@ class cardTask {
         const {
             status,
             reportContent, 
-            materialPath, 
             riskValue
         } = updatedTaskInfo;
 
@@ -79,7 +120,6 @@ class cardTask {
         connection.query(sql, [
             status,
             reportContent, 
-            materialPath, 
             riskValue,
             id
         ], callback);
