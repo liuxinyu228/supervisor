@@ -36,9 +36,19 @@ function isLoggedIn(req, res, next) {
   }
 }
 
+// 管理员权限检查中间件
+function isAdmin(req, res, next) {
+  if (req.session && req.session.is_admin === 1) {
+    return next();
+  } else {
+    return res.status(403).json({ message: '需要管理员权限' });
+  }
+}
+
 // 使用用户路由
 app.use('/api', isLoggedIn, userRoutes);
 app.use('/api', isLoggedIn, taskRoutes);
 app.use('/api', isLoggedIn, fileManagerRoutes);
-app.use('/api/admin', isLoggedIn, adminRoutes);
+app.use('/api/admin', isLoggedIn, isAdmin, adminRoutes);
+
 module.exports = app;

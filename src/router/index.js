@@ -7,6 +7,8 @@ import UserLogin from '../components/UserLogin.vue';
 import FileManager from '../components/work/compile/filemanager/FileManagerBar.vue';
 import AdminDashboard from '../components/admin/AdminDashboard.vue';
 
+
+const API_BASE_URL = 'http://127.0.0.1:3000';
 const routes = [
   {
     path: '/compile',
@@ -29,15 +31,27 @@ const router = createRouter({
 
 // 导航守卫
 router.beforeEach(async (to, from, next) => {
-  const response = await fetch('http://127.0.0.1:3000/api/checkLogin', {
+  const response = await fetch(`${API_BASE_URL}/api/checkLogin`, {
     credentials: 'include' // 携带凭证
   });
   const data = await response.json();
 
   if (to.path !== '/login' && !data.loggedIn) {
     next('/login'); // 未登录，跳转到登录页面
+  } else if (to.path === '/admin') {
+    // 检查管理员权限
+    const adminResponse = await fetch('http://127.0.0.1:3000/api/checkAdmin', {
+      credentials: 'include'
+    });
+    const adminData = await adminResponse.json();
+
+    if (adminData.isAdmin) {
+      next(); // 是管理员，继续导航
+    } else {
+      next('/login'); // 不是管理员，重定向到主页或其他页面
+    }
   } else {
-    next(); // 已登录，继续导航
+    next(); // 已登录且不访问 /admin，继续导航
   }
 });
 

@@ -42,7 +42,7 @@ router.post('/login', (req, res) => {
     }
 
     // 查询数据库中的用户信息
-    const query = 'SELECT username, password, status, group_id, persona_id FROM card_users WHERE username = ?';
+    const query = 'SELECT username, is_admin, password, status, group_id, persona_id FROM card_users WHERE username = ?';
     db.query(query, [username], (err, results) => {
         if (err) {
             return res.status(500).json({ message: 'Database error', error: err });
@@ -63,6 +63,7 @@ router.post('/login', (req, res) => {
         req.session.userId = username;
         req.session.groupId = user.group_id;
         req.session.personaId = user.persona_id;
+        req.session.is_admin = user.is_admin;
 
         console.log("登陆成功：", req.session);
 
@@ -187,6 +188,15 @@ router.post('/logout', (req, res) => {
         });
     } else {
         res.status(400).json({ message: 'No active session' });
+    }
+});
+
+// 新增 /checkAdmin 接口，检查用户是否为管理员
+router.get('/checkAdmin', (req, res) => {
+    if (req.session && req.session.is_admin === 1) {
+        res.json({ isAdmin: true });
+    } else {
+        res.json({ isAdmin: false });
     }
 });
 
